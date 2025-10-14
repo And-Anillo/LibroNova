@@ -1,8 +1,10 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-
 package com.libronova;
+
+import com.libronova.Config.ConexionDB;
+import java.sql.Connection;
 
 /**
  *
@@ -11,6 +13,12 @@ package com.libronova;
 public class LibroNova {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        try (Connection conn = ConexionDB.getConnection()) {
+            if (conn != null) {
+                System.out.println("Prueba completada correctamente.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
