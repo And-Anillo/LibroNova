@@ -3,9 +3,12 @@
  */
 package com.libronova;
 
-import com.libronova.Config.ConexionDB;
-import java.sql.Connection;
+import com.libronova.controller.AppController;
+import com.sun.tools.javac.Main;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.logging.LogManager;
 /**
  *
  * @author Coder
@@ -13,12 +16,15 @@ import java.sql.Connection;
 public class LibroNova {
 
     public static void main(String[] args) {
-        try (Connection conn = ConexionDB.getConnection()) {
-            if (conn != null) {
-                System.out.println("Prueba completada correctamente.");
+        try {
+            InputStream logging = Main.class.getClassLoader().getResourceAsStream("logging.properties");
+            if (logging != null) {
+                LogManager.getLogManager().readConfiguration(logging);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("⚠️ No se pudo cargar logging.properties");
         }
+
+        new AppController().iniciar();
     }
 }
