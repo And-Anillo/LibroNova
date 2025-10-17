@@ -37,7 +37,8 @@ Before running the application, ensure you have the following installed:
 ### 🧭 Use Case Diagram
 ### 📐 Class Diagram
 
-<img width="1024" height="1024" alt="Gemini_Generated_Image_9hfvp09hfvp09hfv" src="https://github.com/user-attachments/assets/8355fb2f-1576-438c-a818-d86fdf57ec1a" />
+<img width="1024" height="1024" alt="Gemini_Generated_Image_2wci242wci242wci" src="https://github.com/user-attachments/assets/d334d875-fde6-4c3d-ad93-31ddbc1383bf" />
+
 
 ## ⚙️ Setup & Execution
 
