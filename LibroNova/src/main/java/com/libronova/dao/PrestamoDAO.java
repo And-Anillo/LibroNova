@@ -14,4 +14,5 @@ public interface PrestamoDAO {
     void registrarPrestamo(Prestamo prestamo);
     void registrarDevolucion(Prestamo prestamo);
     List<Prestamo> listarPrestamosVencidos();
+    List<Prestamo> listarTodosLosPrestamos();
 }

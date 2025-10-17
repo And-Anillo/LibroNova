@@ -226,7 +226,7 @@ public class AppController {
 
     // =============== PRÉSTAMOS ===============
     private void gestionarPrestamos() {
-        String[] ops = {"Registrar préstamo", "Registrar devolución", "Ver préstamos vencidos"};
+        String[] ops = {"Registrar préstamo", "Registrar devolución", "Ver préstamos vencidos", "Ver todos los préstamos"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Préstamos", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
         if (op == null) return;
 
@@ -272,7 +272,9 @@ public class AppController {
                         JOptionPane.showMessageDialog(null, scroll, "Préstamos Vencidos", JOptionPane.WARNING_MESSAGE);
                     }
                 }
+                
             }
+            
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "❌ ID o formato numérico inválido.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (java.time.format.DateTimeParseException e) {
