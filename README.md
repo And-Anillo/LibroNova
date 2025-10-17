@@ -23,9 +23,9 @@ Before running the application, ensure you have the following installed:
 ## 🖼️ Screenshots
 <img width="299" height="125" alt="image" src="https://github.com/user-attachments/assets/d20d22cc-3b55-41a0-b42c-f9a4869ca977" />
 
-<img width="1223" height="268" alt="image" src="https://github.com/user-attachments/assets/4cd91df4-f8d2-45f5-bab2-edbb758f79bd" />
-
 <img width="299" height="125" alt="image" src="https://github.com/user-attachments/assets/218af502-adc7-460a-9c7e-d98e680b9a0b" />
+
+<img width="1223" height="268" alt="image" src="https://github.com/user-attachments/assets/4cd91df4-f8d2-45f5-bab2-edbb758f79bd" />
 
 <img width="458" height="311" alt="image" src="https://github.com/user-attachments/assets/855010d6-bcc1-424b-b6f0-9c416259da9e" />
 
