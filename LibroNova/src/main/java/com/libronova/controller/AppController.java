@@ -14,15 +14,24 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Main application controller that orchestrates user interaction, business logic, and data flow.
+ * It handles login, menu navigation, and delegates operations to respective services.
+ */
 public class AppController {
     private static final Logger logger = Logger.getLogger(AppController.class.getName());
     private Usuario usuarioLogueado;
 
+    // Service layer instances for handling business logic
     private final LibroService libroService;
     private final UsuarioService usuarioService;
     private final SocioService socioService;
     private final PrestamoService prestamoService;
 
+    /**
+     * Constructor: Initializes service layers with their respective DAO implementations.
+     * Uses dependency injection to decouple services from data access logic.
+     */
     public AppController() {
         this.libroService = new LibroService(new JDBCLibroDAO());
         this.usuarioService = new UsuarioServiceDecorator(new JDBCUsuarioDAO());
@@ -30,9 +39,14 @@ public class AppController {
         this.prestamoService = new PrestamoService(new JDBCPrestamoDAO(), new JDBCLibroDAO(), new JDBCSocioDAO());
     }
 
+    /**
+     * Entry point of the application after instantiation.
+     * Handles user login and displays the main menu loop.
+     */
     public void iniciar() {
         if (!login()) return;
 
+        // Main application menu options
         String[] menu = {"Catálogo", "Socios", "Usuarios", "Préstamos", "Exportar", "Salir"};
         while (true) {
             String opcion = (String) JOptionPane.showInputDialog(null,
@@ -57,6 +71,11 @@ public class AppController {
         }
     }
 
+    /**
+     * Handles user authentication via email and password.
+     * Validates credentials and sets the logged-in user.
+     * @return true if login is successful, false otherwise.
+     */
     private boolean login() {
         String email = JOptionPane.showInputDialog("📧 Email:");
         String pass = JOptionPane.showInputDialog("🔒 Contraseña:");
@@ -70,7 +89,11 @@ public class AppController {
         return true;
     }
 
-    // =============== CATÁLOGO ===============
+    // =============== CATALOG MANAGEMENT ===============
+    /**
+     * Manages book catalog operations: register, list, and filter by author or category.
+     * Uses dialog-based input and displays results in formatted tables.
+     */
     private void gestionarCatalogo() {
         String[] ops = {"Registrar", "Listar", "Filtrar por Autor", "Filtrar por Categoría"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Catálogo", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
@@ -79,6 +102,7 @@ public class AppController {
         try {
             switch (op) {
                 case "Registrar" -> {
+                    // Collect book details from user input
                     String isbn = JOptionPane.showInputDialog("ISBN (único):");
                     String titulo = JOptionPane.showInputDialog("Título:");
                     String autor = JOptionPane.showInputDialog("Autor:");
@@ -89,6 +113,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Libro registrado.");
                 }
                 case "Listar" -> {
+                    // Fetch and display all books in a scrollable table
                     List<Libro> libros = libroService.listarLibros();
                     if (libros.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay libros registrados.");
@@ -101,6 +126,7 @@ public class AppController {
                     }
                 }
                 case "Filtrar por Autor" -> {
+                    // Filter books by author name
                     String autor = JOptionPane.showInputDialog("Autor:");
                     List<Libro> libros = libroService.filtrarPorAutor(autor);
                     if (libros.isEmpty()) {
@@ -114,6 +140,7 @@ public class AppController {
                     }
                 }
                 case "Filtrar por Categoría" -> {
+                    // Filter books by category
                     String cat = JOptionPane.showInputDialog("Categoría:");
                     List<Libro> libros = libroService.filtrarPorCategoria(cat);
                     if (libros.isEmpty()) {
@@ -134,7 +161,11 @@ public class AppController {
         }
     }
 
-    // =============== SOCIOS ===============
+    // =============== MEMBER (SOCIO) MANAGEMENT ===============
+    /**
+     * Manages library members (socios). Only accessible to admin users.
+     * Supports registration, listing, and updating member status (ACTIVE/INACTIVE).
+     */
     private void gestionarSocios() {
         if (!usuarioLogueado.isAdmin()) {
             JOptionPane.showMessageDialog(null, "⚠️ Solo ADMIN puede gestionar socios.");
@@ -148,6 +179,7 @@ public class AppController {
         try {
             switch (op) {
                 case "Registrar" -> {
+                    // Collect optional member details
                     String nombre = JOptionPane.showInputDialog("Nombre completo:");
                     String email = JOptionPane.showInputDialog("Email (opcional):");
                     String tel = JOptionPane.showInputDialog("Teléfono (opcional):");
@@ -162,6 +194,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Socio registrado con ID: " + s.getId());
                 }
                 case "Listar" -> {
+                    // Display all members in a formatted table
                     List<Socio> socios = socioService.listarSocios();
                     if (socios.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay socios registrados.");
@@ -174,6 +207,7 @@ public class AppController {
                     }
                 }
                 case "Actualizar estado" -> {
+                    // Change member status between ACTIVE and INACTIVE
                     Long id = Long.parseLong(JOptionPane.showInputDialog("ID del socio:"));
                     Socio s = socioService.obtenerSocio(id);
                     String nuevoEstado = (String) JOptionPane.showInputDialog(null,
@@ -197,7 +231,11 @@ public class AppController {
         }
     }
 
-    // =============== USUARIOS ===============
+    // =============== USER MANAGEMENT ===============
+    /**
+     * Manages system users (administrators and assistants). Admin-only feature.
+     * Currently supports only user registration (defaults to ASISTENTE role).
+     */
     private void gestionarUsuarios() {
         if (!usuarioLogueado.isAdmin()) {
             JOptionPane.showMessageDialog(null, "⚠️ Solo ADMIN puede gestionar usuarios.");
@@ -216,7 +254,7 @@ public class AppController {
             u.setNombre(nombre);
             u.setEmail(email);
             u.setPassword(pass);
-            // Rol y estado se asignan por decorador
+            // Role and status are automatically assigned by the decorator (e.g., ASISTENTE)
             usuarioService.crearUsuario(u);
             JOptionPane.showMessageDialog(null, "✅ Usuario creado como ASISTENTE.");
         } catch (Exception e) {
@@ -224,7 +262,11 @@ public class AppController {
         }
     }
 
-    // =============== PRÉSTAMOS ===============
+    // =============== LOAN (PRÉSTAMO) MANAGEMENT ===============
+    /**
+     * Handles book loan and return operations.
+     * Includes features to view overdue loans with calculated fines.
+     */
     private void gestionarPrestamos() {
         String[] ops = {"Registrar préstamo", "Registrar devolución", "Ver préstamos vencidos", "Ver todos los préstamos"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Préstamos", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
@@ -233,12 +275,14 @@ public class AppController {
         try {
             switch (op) {
                 case "Registrar préstamo" -> {
+                    // Initiate a new loan by ISBN and member ID
                     String isbn = JOptionPane.showInputDialog("ISBN del libro:");
                     Long socioId = Long.parseLong(JOptionPane.showInputDialog("ID del socio:"));
                     prestamoService.realizarPrestamo(isbn, socioId);
                     JOptionPane.showMessageDialog(null, "✅ Préstamo registrado.");
                 }
                 case "Registrar devolución" -> {
+                    // Record book return with a specific date
                     Long prestamoId = Long.parseLong(JOptionPane.showInputDialog("ID del préstamo:"));
                     String fechaStr = JOptionPane.showInputDialog("Fecha de devolución (yyyy-MM-dd):");
                     LocalDate fechaDev = LocalDate.parse(fechaStr);
@@ -246,6 +290,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Devolución registrada.");
                 }
                 case "Ver préstamos vencidos" -> {
+                    // Display overdue loans with fine and days overdue
                     List<Prestamo> vencidos = prestamoService.obtenerPrestamosVencidos();
                     if (vencidos.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay préstamos vencidos.");
@@ -280,13 +325,18 @@ public class AppController {
         } catch (java.time.format.DateTimeParseException e) {
             JOptionPane.showMessageDialog(null, "❌ Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (InsufficientStockException | SocioInactivoException e) {
+            // Business rule violations: show as warnings, not errors
             JOptionPane.showMessageDialog(null, "⚠️ " + e.getMessage(), "Regla de negocio", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "❌ " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // =============== EXPORTAR ===============
+    // =============== DATA EXPORT ===============
+    /**
+     * Exports key data (books and overdue loans) to CSV files in the project directory.
+     * Uses utility class CSVExporter for file generation.
+     */
     private void exportarDatos() {
         try {
             List<Libro> libros = libroService.listarLibros();
