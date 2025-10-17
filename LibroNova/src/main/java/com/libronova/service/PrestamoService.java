@@ -142,4 +142,9 @@ public class PrestamoService {
         System.out.println("[GET] Listando préstamos vencidos");
         return prestamoDAO.listarPrestamosVencidos();
     }
+    
+    public List<Prestamo> obtenerTodosLosPrestamos() {
+    System.out.println("[GET] Listando todos los préstamos");
+    return prestamoDAO.listarTodosLosPrestamos();
+}
 }
