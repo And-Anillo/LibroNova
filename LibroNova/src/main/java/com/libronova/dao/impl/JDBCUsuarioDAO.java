@@ -9,8 +9,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JDBC implementation of the UsuarioDAO interface.
+ * Handles database operations for system users (e.g., administrators and assistants),
+ * including authentication, creation, and listing.
+ */
 public class JDBCUsuarioDAO implements UsuarioDAO {
 
+    /**
+     * Authenticates a user by email and password.
+     * Only returns a user if credentials match AND the account is active ('ACTIVO').
+     * Returns null if authentication fails or the user is inactive.
+     */
     @Override
     public Usuario login(String email, String password) {
         String sql = "SELECT * FROM usuarios WHERE email = ? AND password = ? AND estado = 'ACTIVO'";
@@ -35,6 +45,10 @@ public class JDBCUsuarioDAO implements UsuarioDAO {
         return null;
     }
 
+    /**
+     * Inserts a new system user into the 'usuarios' table.
+     * The caller is expected to set all fields (including role and status) before calling this method.
+     */
     @Override
     public void crear(Usuario usuario) {
         String sql = "INSERT INTO usuarios(nombre, email, password, rol, estado, created_at) VALUES (?, ?, ?, ?, ?, ?)";
@@ -52,6 +66,10 @@ public class JDBCUsuarioDAO implements UsuarioDAO {
         }
     }
 
+    /**
+     * Retrieves a list of all system users, ordered by creation date (newest first).
+     * Includes all user details: ID, name, email, role, status, and creation timestamp.
+     */
     @Override
     public List<Usuario> listarTodos() {
         List<Usuario> usuarios = new ArrayList<>();

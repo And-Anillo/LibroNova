@@ -8,8 +8,17 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JDBC implementation of the PrestamoDAO interface.
+ * Handles all database operations related to book loans (préstamos), including registration,
+ * return processing, and querying overdue or all loans.
+ */
 public class JDBCPrestamoDAO implements PrestamoDAO {
 
+    /**
+     * Inserts a new loan record into the 'prestamos' table.
+     * The loan starts in 'PENDIENTE' (pending) state with no return date or fine.
+     */
     @Override
     public void registrarPrestamo(Prestamo prestamo) {
         String sql = "INSERT INTO prestamos(isbn, socio_id, fecha_prestamo, estado) VALUES (?, ?, ?, ?)";
@@ -24,6 +33,10 @@ public class JDBCPrestamoDAO implements PrestamoDAO {
         }
     }
 
+    /**
+     * Updates an existing loan to mark it as returned ('DEVUELTO').
+     * Sets the return date and any applicable fine (multa).
+     */
     @Override
     public void registrarDevolucion(Prestamo prestamo) {
         String sql = "UPDATE prestamos SET fecha_devolucion = ?, multa = ?, estado = 'DEVUELTO' WHERE id = ?";
@@ -37,6 +50,12 @@ public class JDBCPrestamoDAO implements PrestamoDAO {
         }
     }
 
+    /**
+     * Retrieves all overdue loans (préstamos vencidos).
+     * A loan is considered overdue if its status is 'PENDIENTE' and the loan date
+     * is older than the allowed loan period (defined in DBConnection.getDiasPrestamo()).
+     * Joins with 'libros' and 'socios' tables to include book title and member name.
+     */
     @Override
     public List<Prestamo> listarPrestamosVencidos() {
         List<Prestamo> prestamos = new ArrayList<>();
@@ -69,6 +88,11 @@ public class JDBCPrestamoDAO implements PrestamoDAO {
         return prestamos;
     }
 
+    /**
+     * Retrieves a complete list of all loans (both pending and returned),
+     * ordered by creation date (newest first).
+     * Includes book title and member name via JOINs with related tables.
+     */
     @Override
     public List<Prestamo> listarTodosLosPrestamos() {
         List<Prestamo> prestamos = new ArrayList<>();
