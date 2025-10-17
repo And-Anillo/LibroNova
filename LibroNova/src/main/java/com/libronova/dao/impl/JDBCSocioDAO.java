@@ -9,8 +9,18 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * JDBC implementation of the SocioDAO interface.
+ * Manages all database operations for library members (socios), including creation,
+ * retrieval, listing, and updates.
+ */
 public class JDBCSocioDAO implements SocioDAO {
 
+    /**
+     * Inserts a new member (socio) into the 'socios' table.
+     * Automatically sets the creation timestamp to the current time.
+     * Retrieves and assigns the auto-generated database ID to the socio object.
+     */
     @Override
     public void crear(Socio socio) {
         String sql = "INSERT INTO socios(nombre_completo, email, telefono, direccion, estado, created_at) VALUES (?, ?, ?, ?, ?, ?)";
@@ -24,6 +34,7 @@ public class JDBCSocioDAO implements SocioDAO {
             stmt.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
             stmt.executeUpdate();
 
+            // Retrieve the auto-generated ID and set it on the socio object
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     socio.setId(rs.getLong(1));
@@ -34,6 +45,10 @@ public class JDBCSocioDAO implements SocioDAO {
         }
     }
 
+    /**
+     * Retrieves a single member by their unique ID.
+     * Returns null if no member is found with the given ID.
+     */
     @Override
     public Socio buscarPorId(Long id) {
         String sql = "SELECT * FROM socios WHERE id = ?";
@@ -50,6 +65,9 @@ public class JDBCSocioDAO implements SocioDAO {
         return null;
     }
 
+    /**
+     * Returns a list of all members, ordered by creation date (newest first).
+     */
     @Override
     public List<Socio> listarTodos() {
         List<Socio> socios = new ArrayList<>();
@@ -66,6 +84,10 @@ public class JDBCSocioDAO implements SocioDAO {
         return socios;
     }
 
+    /**
+     * Updates an existing member's information in the database using their ID.
+     * All fields except the ID are updated (including status: ACTIVO/INACTIVO).
+     */
     @Override
     public void actualizar(Socio socio) {
         String sql = "UPDATE socios SET nombre_completo = ?, email = ?, telefono = ?, direccion = ?, estado = ? WHERE id = ?";
@@ -83,6 +105,10 @@ public class JDBCSocioDAO implements SocioDAO {
         }
     }
 
+    /**
+     * Maps a row from the ResultSet to a Socio domain object.
+     * Converts SQL types (e.g., TIMESTAMP) to appropriate Java types (e.g., LocalDateTime).
+     */
     private Socio mapResultSetToSocio(ResultSet rs) throws SQLException {
         Socio s = new Socio();
         s.setId(rs.getLong("id"));

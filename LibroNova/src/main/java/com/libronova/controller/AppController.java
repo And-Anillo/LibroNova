@@ -14,15 +14,27 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.logging.Logger;
 
+/**
+ * Main application controller that orchestrates user interaction, business
+ * logic, and data flow. It handles login, menu navigation, and delegates
+ * operations to respective services.
+ */
 public class AppController {
+
     private static final Logger logger = Logger.getLogger(AppController.class.getName());
     private Usuario usuarioLogueado;
 
+    // Service layer instances for handling business logic
     private final LibroService libroService;
     private final UsuarioService usuarioService;
     private final SocioService socioService;
     private final PrestamoService prestamoService;
 
+    /**
+     * Constructor: Initializes service layers with their respective DAO
+     * implementations. Uses dependency injection to decouple services from data
+     * access logic.
+     */
     public AppController() {
         this.libroService = new LibroService(new JDBCLibroDAO());
         this.usuarioService = new UsuarioServiceDecorator(new JDBCUsuarioDAO());
@@ -30,9 +42,16 @@ public class AppController {
         this.prestamoService = new PrestamoService(new JDBCPrestamoDAO(), new JDBCLibroDAO(), new JDBCSocioDAO());
     }
 
+    /**
+     * Entry point of the application after instantiation. Handles user login
+     * and displays the main menu loop.
+     */
     public void iniciar() {
-        if (!login()) return;
+        if (!login()) {
+            return;
+        }
 
+        // Main application menu options
         String[] menu = {"Catálogo", "Socios", "Usuarios", "Préstamos", "Exportar", "Salir"};
         while (true) {
             String opcion = (String) JOptionPane.showInputDialog(null,
@@ -40,15 +59,22 @@ public class AppController {
                     "LibroNova - Menú Principal",
                     JOptionPane.QUESTION_MESSAGE, null, menu, menu[0]);
 
-            if (opcion == null || "Salir".equals(opcion)) break;
+            if (opcion == null || "Salir".equals(opcion)) {
+                break;
+            }
 
             try {
                 switch (opcion) {
-                    case "Catálogo" -> gestionarCatalogo();
-                    case "Socios" -> gestionarSocios();
-                    case "Usuarios" -> gestionarUsuarios();
-                    case "Préstamos" -> gestionarPrestamos();
-                    case "Exportar" -> exportarDatos();
+                    case "Catálogo" ->
+                        gestionarCatalogo();
+                    case "Socios" ->
+                        gestionarSocios();
+                    case "Usuarios" ->
+                        gestionarUsuarios();
+                    case "Préstamos" ->
+                        gestionarPrestamos();
+                    case "Exportar" ->
+                        exportarDatos();
                 }
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(null, "❌ Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -57,10 +83,18 @@ public class AppController {
         }
     }
 
+    /**
+     * Handles user authentication via email and password. Validates credentials
+     * and sets the logged-in user.
+     *
+     * @return true if login is successful, false otherwise.
+     */
     private boolean login() {
         String email = JOptionPane.showInputDialog("📧 Email:");
         String pass = JOptionPane.showInputDialog("🔒 Contraseña:");
-        if (email == null || pass == null) return false;
+        if (email == null || pass == null) {
+            return false;
+        }
 
         usuarioLogueado = usuarioService.login(email, pass);
         if (usuarioLogueado == null) {
@@ -70,15 +104,23 @@ public class AppController {
         return true;
     }
 
-    // =============== CATÁLOGO ===============
+    // =============== CATALOG MANAGEMENT ===============
+    /**
+     * Manages book catalog operations: register, list, and filter by author or
+     * category. Uses dialog-based input and displays results in formatted
+     * tables.
+     */
     private void gestionarCatalogo() {
         String[] ops = {"Registrar", "Listar", "Filtrar por Autor", "Filtrar por Categoría"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Catálogo", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
-        if (op == null) return;
+        if (op == null) {
+            return;
+        }
 
         try {
             switch (op) {
                 case "Registrar" -> {
+                    // Collect book details from user input
                     String isbn = JOptionPane.showInputDialog("ISBN (único):");
                     String titulo = JOptionPane.showInputDialog("Título:");
                     String autor = JOptionPane.showInputDialog("Autor:");
@@ -89,6 +131,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Libro registrado.");
                 }
                 case "Listar" -> {
+                    // Fetch and display all books in a scrollable table
                     List<Libro> libros = libroService.listarLibros();
                     if (libros.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay libros registrados.");
@@ -101,6 +144,7 @@ public class AppController {
                     }
                 }
                 case "Filtrar por Autor" -> {
+                    // Filter books by author name
                     String autor = JOptionPane.showInputDialog("Autor:");
                     List<Libro> libros = libroService.filtrarPorAutor(autor);
                     if (libros.isEmpty()) {
@@ -114,6 +158,7 @@ public class AppController {
                     }
                 }
                 case "Filtrar por Categoría" -> {
+                    // Filter books by category
                     String cat = JOptionPane.showInputDialog("Categoría:");
                     List<Libro> libros = libroService.filtrarPorCategoria(cat);
                     if (libros.isEmpty()) {
@@ -134,7 +179,12 @@ public class AppController {
         }
     }
 
-    // =============== SOCIOS ===============
+    // =============== MEMBER (SOCIO) MANAGEMENT ===============
+    /**
+     * Manages library members (socios). Only accessible to admin users.
+     * Supports registration, listing, and updating member status
+     * (ACTIVE/INACTIVE).
+     */
     private void gestionarSocios() {
         if (!usuarioLogueado.isAdmin()) {
             JOptionPane.showMessageDialog(null, "⚠️ Solo ADMIN puede gestionar socios.");
@@ -143,11 +193,14 @@ public class AppController {
 
         String[] ops = {"Registrar", "Listar", "Actualizar estado"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Socios", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
-        if (op == null) return;
+        if (op == null) {
+            return;
+        }
 
         try {
             switch (op) {
                 case "Registrar" -> {
+                    // Collect optional member details
                     String nombre = JOptionPane.showInputDialog("Nombre completo:");
                     String email = JOptionPane.showInputDialog("Email (opcional):");
                     String tel = JOptionPane.showInputDialog("Teléfono (opcional):");
@@ -162,6 +215,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Socio registrado con ID: " + s.getId());
                 }
                 case "Listar" -> {
+                    // Display all members in a formatted table
                     List<Socio> socios = socioService.listarSocios();
                     if (socios.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay socios registrados.");
@@ -174,6 +228,7 @@ public class AppController {
                     }
                 }
                 case "Actualizar estado" -> {
+                    // Change member status between ACTIVE and INACTIVE
                     Long id = Long.parseLong(JOptionPane.showInputDialog("ID del socio:"));
                     Socio s = socioService.obtenerSocio(id);
                     String nuevoEstado = (String) JOptionPane.showInputDialog(null,
@@ -197,7 +252,11 @@ public class AppController {
         }
     }
 
-    // =============== USUARIOS ===============
+    // =============== USER MANAGEMENT ===============
+    /**
+     * Manages system users (administrators and assistants). Admin-only feature.
+     * Currently supports only user registration (defaults to ASISTENTE role).
+     */
     private void gestionarUsuarios() {
         if (!usuarioLogueado.isAdmin()) {
             JOptionPane.showMessageDialog(null, "⚠️ Solo ADMIN puede gestionar usuarios.");
@@ -206,7 +265,9 @@ public class AppController {
 
         String[] ops = {"Registrar"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Usuarios", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
-        if (op == null || !"Registrar".equals(op)) return;
+        if (op == null || !"Registrar".equals(op)) {
+            return;
+        }
 
         try {
             String nombre = JOptionPane.showInputDialog("Nombre:");
@@ -216,7 +277,7 @@ public class AppController {
             u.setNombre(nombre);
             u.setEmail(email);
             u.setPassword(pass);
-            // Rol y estado se asignan por decorador
+            // Role and status are automatically assigned by the decorator (e.g., ASISTENTE)
             usuarioService.crearUsuario(u);
             JOptionPane.showMessageDialog(null, "✅ Usuario creado como ASISTENTE.");
         } catch (Exception e) {
@@ -224,21 +285,29 @@ public class AppController {
         }
     }
 
-    // =============== PRÉSTAMOS ===============
+    // =============== LOAN (PRÉSTAMO) MANAGEMENT ===============
+    /**
+     * Handles book loan and return operations. Includes features to view
+     * overdue loans with calculated fines.
+     */
     private void gestionarPrestamos() {
         String[] ops = {"Registrar préstamo", "Registrar devolución", "Ver préstamos vencidos", "Ver todos los préstamos"};
         String op = (String) JOptionPane.showInputDialog(null, "Opción:", "Préstamos", JOptionPane.QUESTION_MESSAGE, null, ops, ops[0]);
-        if (op == null) return;
+        if (op == null) {
+            return;
+        }
 
         try {
             switch (op) {
                 case "Registrar préstamo" -> {
+                    // Initiate a new loan by ISBN and member ID
                     String isbn = JOptionPane.showInputDialog("ISBN del libro:");
                     Long socioId = Long.parseLong(JOptionPane.showInputDialog("ID del socio:"));
                     prestamoService.realizarPrestamo(isbn, socioId);
                     JOptionPane.showMessageDialog(null, "✅ Préstamo registrado.");
                 }
                 case "Registrar devolución" -> {
+                    // Record book return with a specific date
                     Long prestamoId = Long.parseLong(JOptionPane.showInputDialog("ID del préstamo:"));
                     String fechaStr = JOptionPane.showInputDialog("Fecha de devolución (yyyy-MM-dd):");
                     LocalDate fechaDev = LocalDate.parse(fechaStr);
@@ -246,6 +315,7 @@ public class AppController {
                     JOptionPane.showMessageDialog(null, "✅ Devolución registrada.");
                 }
                 case "Ver préstamos vencidos" -> {
+                    // Display overdue loans with fine and days overdue
                     List<Prestamo> vencidos = prestamoService.obtenerPrestamosVencidos();
                     if (vencidos.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "No hay préstamos vencidos.");
@@ -272,21 +342,53 @@ public class AppController {
                         JOptionPane.showMessageDialog(null, scroll, "Préstamos Vencidos", JOptionPane.WARNING_MESSAGE);
                     }
                 }
-                
+                case "Ver todos los préstamos" -> {
+                    List<Prestamo> todos = prestamoService.obtenerTodosLosPrestamos();
+                    if (todos.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "No hay préstamos registrados.");
+                    } else {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append(String.format("%-5s %-15s %-25s %-20s %-12s %-12s %s\n",
+                                "ID", "ISBN", "Título", "Socio", "Préstamo", "Devolución", "Estado"));
+                        sb.append("=".repeat(110)).append("\n");
+                        for (Prestamo p : todos) {
+                            String dev = p.getFechaDevolucion() != null ? p.getFechaDevolucion().toString() : "PENDIENTE";
+                            sb.append(String.format("%-5d %-15s %-25s %-20s %-12s %-12s %s\n",
+                                    p.getId(),
+                                    p.getIsbn(),
+                                    p.getTituloLibro().length() > 25 ? p.getTituloLibro().substring(0, 22) + "..." : p.getTituloLibro(),
+                                    p.getNombreSocio().length() > 20 ? p.getNombreSocio().substring(0, 17) + "..." : p.getNombreSocio(),
+                                    p.getFechaPrestamo(),
+                                    dev,
+                                    p.getEstado()
+                            ));
+                        }
+                        JTextArea area = new JTextArea(sb.toString());
+                        area.setEditable(false);
+                        JScrollPane scroll = new JScrollPane(area);
+                        JOptionPane.showMessageDialog(null, scroll, "Todos los Préstamos", JOptionPane.PLAIN_MESSAGE);
+                    }
+                }
+
             }
-            
+
         } catch (NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "❌ ID o formato numérico inválido.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (java.time.format.DateTimeParseException e) {
             JOptionPane.showMessageDialog(null, "❌ Formato de fecha inválido. Use yyyy-MM-dd.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (InsufficientStockException | SocioInactivoException e) {
+            // Business rule violations: show as warnings, not errors
             JOptionPane.showMessageDialog(null, "⚠️ " + e.getMessage(), "Regla de negocio", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "❌ " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    // =============== EXPORTAR ===============
+    // =============== DATA EXPORT ===============
+    /**
+     * Exports key data (books and overdue loans) to CSV files in the project
+     * directory. Uses utility class CSVExporter for file generation.
+     */
     private void exportarDatos() {
         try {
             List<Libro> libros = libroService.listarLibros();
@@ -296,10 +398,10 @@ public class AppController {
             CSVExporter.exportarPrestamosVencidos(vencidos);
 
             JOptionPane.showMessageDialog(null,
-                    "✅ Archivos exportados:\n" +
-                    "- libros_export.csv\n" +
-                    "- prestamos_vencidos.csv\n\n" +
-                    "Ubicación: carpeta del proyecto",
+                    "✅ Archivos exportados:\n"
+                    + "- libros_export.csv\n"
+                    + "- prestamos_vencidos.csv\n\n"
+                    + "Ubicación: carpeta del proyecto",
                     "Exportación exitosa",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception e) {
