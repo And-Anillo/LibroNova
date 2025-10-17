@@ -20,6 +20,25 @@ Before running the application, ensure you have the following installed:
 
 ---
 
+## 🖼️ Screenshots
+<img width="299" height="125" alt="image" src="https://github.com/user-attachments/assets/d20d22cc-3b55-41a0-b42c-f9a4869ca977" />
+
+<img width="1223" height="268" alt="image" src="https://github.com/user-attachments/assets/4cd91df4-f8d2-45f5-bab2-edbb758f79bd" />
+
+<img width="299" height="125" alt="image" src="https://github.com/user-attachments/assets/218af502-adc7-460a-9c7e-d98e680b9a0b" />
+
+<img width="458" height="311" alt="image" src="https://github.com/user-attachments/assets/855010d6-bcc1-424b-b6f0-9c416259da9e" />
+
+<img width="966" height="268" alt="image" src="https://github.com/user-attachments/assets/b0846dc1-3fbc-426f-87a4-a502b18c3afe" />
+
+<img width="1020" height="183" alt="image" src="https://github.com/user-attachments/assets/10ee6e26-93e8-4b67-90aa-201f380f49eb" />
+
+## 🧩 Architecture Diagrams
+### 🧭 Use Case Diagram
+### 📐 Class Diagram
+
+<img width="1024" height="1024" alt="Gemini_Generated_Image_9hfvp09hfvp09hfv" src="https://github.com/user-attachments/assets/8355fb2f-1576-438c-a818-d86fdf57ec1a" />
+
 ## ⚙️ Setup & Execution
 
 ### 1. Database Initialization
