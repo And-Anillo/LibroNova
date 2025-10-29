@@ -139,4 +139,3 @@ Tests cover ISBN uniqueness, stock validation, and loan logic.
 Name: Andersson Moises Vargas Anillo
 Clan: caiman
 Email: anderssoninedjas@gmail.com
-Document ID: 1046692389
